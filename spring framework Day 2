@@ -1,0 +1,826 @@
+import java.beans.BeanProperty;
+
+import com.oracle.svm.core.annotate.Substitute;
+
+import ConfigB.RepositoryConfig;
+
+public static void main(String[] args) {
+  AnnotationConfigApplicationContext ctx =
+    new AnnotationConfigApplicationContext();
+
+  ctx.scan("com.acme");
+  ctx.refresh();
+  MyService myService = ctx.getBean(MyService.class);
+
+}
+
+//
+@Configuration
+  public class AppConfig{
+
+    @Bean
+    public TransferServiceImpl transferService(){
+      return new TransferServiceImpl();
+  }
+  }
+
+//
+public interface BaseConfig {
+
+  @Bean
+  default TranferServiceImpl transferService() {
+    return new TransferServiceImpl();
+  }
+
+}
+
+//
+@Configuration
+public class AppConfig implements BaseConfig {
+
+}
+
+//
+@Configuration
+public class AppConfig {
+
+  @Bean
+  public TransferService transferService(AccountReposiory accountRepository) {
+    return new TransferServiceImpl(accountRepository);
+  }
+}
+
+////
+public class BeanOne {
+  public void init() {
+
+  }
+}
+
+public class BeanTwo {
+  public void cleanup() {
+  }
+
+}
+
+@Configuration
+public class AppConfig {
+
+  @Bean(initMethod = "init")
+  public BeanOne beanOne() {
+    return new BeanOne();
+  }
+
+  @Bean(destroyMethod = "cleanup")
+  public BeanTwo beanTwo() {
+    return new BeanTwo();
+  }
+
+  }
+
+  //
+  @Bean(destoryMethod = "")
+  public DataSource dataSource() throws NamingException {
+    return (DataSource) jndiTemplate.lookup("MyDS");
+  }
+
+  //
+  @Configuration
+  public class AppConfig {
+
+    @Bean
+    public BeanOne beanOne() {
+      BeanOne beanOne = new BeanOne();
+      beanOne.init();
+      return beanOne;
+    }
+  }
+
+  //
+  @Configuration
+  public class MyConfiguration {
+
+    @Bean
+    @Scope("prototype")
+    public Encryptor encrypter() {
+    }
+  }
+
+  //
+  @Bean
+  @SessionScope
+  public UserPreferences userPreferences() {
+    return new UserPreferences();
+  }
+
+  @Bean
+  public Service userService() {
+    UserService service = new SimpleUserService();
+
+    service.setUserPreferences(userPreferences());
+    return service;
+  }
+
+  //
+  @Configuration
+  public class AppConfig {
+    @Bean("myThing")
+    public Thing thing() {
+      return new Thing();
+    }
+  }
+  //
+
+  @Configuration
+  public class AppConfig {
+
+    @Bean({ "dataSource", "subsystemA-dataSource", "subsystemB-dataSource" })
+    public DataSource dataSource() {
+    }
+  }
+
+  //
+  @Configuration
+  public class AppConfig {
+
+    @Bean
+    @Description("Provides a basic example of a bean")
+    public Thing thing() {
+      return new Thing();
+    }
+  }
+
+  //
+  @Configuration
+  public class AppConfig {
+
+    @Bean
+    public BeanOne beanOne() {
+      return new BeanOne(beanTwo());
+    }
+
+    @Bean
+    public BeanTwo beanTwo() {
+      return new BeanTwo();
+    }
+  }
+
+  //
+  public abstract class CommandManager {
+    public Object process(Object commandState) {
+
+      Command command = createCommand();
+
+      command.setState(commandState);
+      return command.execute();
+    }
+
+    protected abstract Command createCommand();
+
+  }
+  //
+
+  @Bean
+  @Scope("prototype")
+  public AsyncCommand asynCommand() {
+    AsyncCommand command = new AsyncCommand();
+    return command;
+  }
+
+@Bean
+  public CommandManager commandManager(){
+    return new CommandManager(){
+      return asyncCommand();
+    }
+}
+
+}
+
+//
+@Configuration
+public class AppConfig {
+  @Bean
+    public ClientService clientService1()}
+
+  ClinetServiceImpl clinetService = new ClientServiceImpl();clinetService.setClintDao(clientDao());
+return clinetService;
+}
+
+@Bean
+  public ClientDao clientService2(){
+  ClientServiceImpl clientService = new ClientServiceImpl();
+  clientService.setClintDao(clientDao());
+  return clientService;
+}
+
+  @Bean
+  public ClientDao clientDao() {
+    return new ClientDao();
+  }
+}
+
+//
+@Configuration
+public class ConfigA {
+
+  @Bean
+  public A a() {
+    return new A();
+  }
+}
+
+@Configuration
+@Import(ConfigA.class)
+public class ConfigB {
+
+  @Bean
+  public B b() {
+    return new B();
+  }
+
+  }
+  //
+
+  public static void main(String[] args) {
+    ApplicationContext ctx = new AnnotationConfigApplicationContext(ConfigB.class);
+
+    A a = ctx.getBean(A.class);
+    B b = ctx.getBean(B.class);
+
+  }
+
+  //
+  @Configuration
+  public class ServiceConfig {
+
+    @Bean
+    public TransferService transferService(AccountRepository accountRepository) {
+      return new TransferServiceImpl(accountRepository);
+    }
+  }
+
+  @Configuration
+  public class RepositoryConfig {
+
+    @Bean
+    public AccountRepository accountRepository(DataSource dataSource) {
+      return new JdbcAccountRepository(dataSource);
+    }
+  }
+
+  @Configuration
+  @Import({ ServiceConfig.class, Repository.class })
+  public class SystemTestConfig {
+
+    @Bean
+    public DataSource dataSource() {
+
+    }
+  }
+
+  //
+  public static void main(String[] args) {
+    ApplicationContext ctx = new AnnotationConfigApplicationContext(SystemTestConfigB.class);
+
+    TransferService transferService = ctx.getBean(TransferService.class);
+    transferService.transfer(100.00, "A123", "C456");
+  }
+
+  //
+  @Configuration
+  public class ServiceConfig {
+
+    @Autowired
+    private AccountRepository accountRepository;
+
+    @Bean
+    public TransferService transferService
+    {
+      return new TransfereServiceImpl(accountRepository);
+    }
+  }
+
+  @Configuration
+  public class RepositoryConfig {
+    private final DataSource dataSource;
+
+    public RepositoryConfig(DataSource dataSource) {
+      this.dataSource = dataSource;
+    }
+
+    @Bean
+    public RepositoryConfig(DataSource dataSource) {
+      this.dataSource = dataSource;
+    }
+
+    @Bean
+    public AccountRepository accountRepository() {
+      return new JdbcAccountRepository(dataSource);
+    }
+  }
+
+  @Configuration
+  @Import({ ServiceConfig.class, RepositoryConfig.class })
+  public class SystemTestConfig {
+
+    @Bean
+    public DataSource dataSource() {
+    }
+  }
+
+  public static void main(String[] args) {
+    ApplicationContext ctx = new AnnotationConfigApplicationContext(SystemTestConfig.class);
+
+    TransferService transferService = ctx.getBean(TransferService.class);
+    transferService.transfer(100.00, "A123", "C456");
+  }
+
+  //
+  @Configuration
+  public class ServiceConfig {
+
+    @Autowired
+    private ReposityConfig repositoryConfig;
+
+    @Bean
+    public TransferService transferService() {
+      return new TransferServiceImpl(repositoryConfig.accountRepository());
+    }
+
+  }
+
+  //
+  @Configuration
+  public class ServiceConfig {
+
+    @Autowired
+    private RepositoryConfig repositoryConfig;
+
+    @Bean
+    public TransferService transferService() {
+      return new TransferServiceImpl(repositoryConfig.accountRepository());
+    }
+  }
+
+  @Configuration
+  public interface RepositoryConfig {
+    @Bean
+    AccountRepository accountRepository();
+  }
+
+  @Configuration
+  public class DefaultRepositoryConfig implements RepositoryConfig {
+
+    @Bean
+    public AccountRepository accountRepository() {
+      return new JdbcAccountRepository();
+    }
+  }
+
+  @Configuration
+  @Import({ ServiceConfig.class, DefaultRepositoryConfig.class })
+  public class SystemTestConfig {
+
+    @Bean
+    public DataSource dataSource() {
+    }
+  }
+
+  public static void main(String[] args) {
+    ApplicationContext ctx = new AnnotationConfigApplicationContext(SystemTestConfig.class);
+    TransferService transferService = ctx.getBean(TransferService.class);
+    transferService.transfer(100.00, "A123", "C456");
+  }
+  //
+
+@Override
+  public boolean matchs(ConditionContext context, AnnotatedTypeMetadata metadata){
+
+  MultiValueMap<String, Object> attrs =
+   metadata.getAllAnnotationAttributes(Profile.class.getName());
+  if(attrs.!= null){
+    for(Object value : attrs.get("value")){
+      if(context.getEnvironment().acceptsProfiles((String) value)){
+        return true;
+      }
+  }
+    return false;
+  }
+  return true;
+}
+
+  //
+  @Configuration
+  public class AppConfig {
+
+    @Autowired
+    private DataSource dataSource;
+
+    @Bean
+    public AccountRepository accountRepository() {
+      return new JdbcAccountRepository(dataSource);
+    }
+
+    @Bean
+    public TransferService transferService() {
+      return new TransferServiceImpl(accountRepository());
+    }
+
+  }
+  //
+
+public static void main(String[] args){
+  ApplicationContext ctx = new 
+    ClassPathXmlApplicationContext("classpath"/com/acme/system-test-config.xml");
+  TransferService transferService = ctx.getBean(TransferService.class);
+  
+}
+
+  //
+  @Configuration
+  @ImportResource("classpath:/com/acme//properties-config.xml")
+  public class AppConfig {
+
+    @Value("${jdbc.url}")
+    private String url;
+
+    @Value("${jdbc.username}")
+    private String username;
+
+    @Value("${jdbc.password}")
+    private String password;
+
+    @Bean
+    public DataSource dataSource() {
+      return new DriverManagerDataSource(url, username, password);
+    }
+  }
+
+  //
+  public static void main(String[] args) {
+    ApplicationContext ctx = new AnnotationConfigApplicationContext(AppConfig.class);
+    TransferService transferService = ctx.getBean(TransferService.class);
+  }
+  //
+
+  @Bean
+  public DataSource dataSource() {
+    return new EmbeddedDatabaseBuilder()
+        .setType(EmbeddedDatabaseType.HSQL)
+        .addScript("my-schema.sql")
+        .addScript("my-test-data.sql")
+        .build();
+  }
+
+  //
+  @Bean(destroyMethod = "")
+  public DataSource dataSource() throws Exception {
+    Context ctx = new initialContext();
+    return (DataSource) ctx.lookup("java:comp/env/jdbc/datasource");
+  }
+  //
+
+  @Configuration
+  @Profile("development")
+  public class StandaloneConfig {
+
+    @Bean
+    public DataSource dataSource() {
+      return new EmbeddedDatabaseBuilder()
+          .setType(EmbeddedDatabaseType.HSQL)
+          .addScript("classpath:com/bank/config/sql/schema.sql")
+          .addScript("classpath:com/bank/config/sql/test-data.sql")
+          .build();
+    }
+  }
+
+  //
+  @Configuration
+  @Profile("production")
+  public class JndiDataConfig {
+
+    @Bean(destoryMethod = "")
+    public DataSource dataSource() throws Exception {
+      Context ctx = new InitialContext();
+      return (DataSource) ctx.lookup("java:comp/env/jdbc/datasource");
+    }
+  }
+
+  //
+  @Target(ElementType.TYPE)
+  @Retention(RetentionPolicy.RUNTIME)
+  @Profile("production")
+  public @interface Production {
+
+  }
+
+  //
+  @Configuration
+  public class ApplConfig {
+
+    @Bean("dataSource")
+    @Profile("developement")
+    public DataSource standaloneDataSource() {
+      return new EmbededDatabaseBuilder()
+          .setType(EmbeddedDatabaseType.HSQL)
+          .addScript("classpath:com/bank/config/sql/schema.sql")
+          .addScript("classpath:com/bank/config/sql/test-data.sql")
+          .build();
+
+    }
+
+    @Bean("dataSource")
+    @Profile("production")
+    public DataSource jndiDataSource() throws Exception {
+      Context ctx = new InitialContext();
+      return (DataSource) ctx.lookup("java:comp/env/jdbc/datasource");
+    }
+  }
+  //
+
+  AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();ctx.getEnvironments().setActiveProfiles("development");ctx.register(SomeConfig.class,StandaloneConfig.class,JndiDataConfig.class);ctx.refresh();
+  //
+  ctx.getEnvironments().setActiveProfiles("profile1","profile2");
+
+  //
+  @Configuration
+  @Profile("default")
+  public class DefaultConfig {
+
+    @Bean
+    public DataSource dataSource() {
+      return new EmbeddedDatabaseBuilder()
+          .setType(EmbeddedDatabaseType.HSQL)
+          .addScript("classpath:com/bank/config/sql/schema.sql")
+          .build();
+    }
+  }
+
+  //
+  ApplicationContext ctx = new GenericApplicationContext();
+  Environments env = ctx.getEnvironments();
+  boolean containsMyProperty = env.acceptsProfiles(
+      "my-property");System.out.println("Does my environment contain the 'my-property' property?"+containsMyProperty);
+
+  //
+@ConfigurableApplicationContext ctx = new GenericApplicationContext();
+MutablePropertySources Sources = ctx.getEnvironment().getPropertySources();sources.addFirst(new MyPropertySource());
+
+  //
+  @Configuration
+  @PropertySource("classpath:/com/myco/app.properties")
+  public class AppConfig {
+
+    @Autowired
+    Environment env;
+
+    @Bean
+    public TestBean testBean() {
+      TestBean testBean = new TestBean();
+      testBean.setName(env.getProperty("testbean.name"));
+
+      return testBean;
+    }
+
+  }
+
+  //
+  @Configuration
+  @PropertySource("classpath:/com//${my.placeholder:default/path}/app.properties")
+  public class AppConfig {
+
+    @Autowired
+    Environment env;
+
+    @Bean
+    public testBean testBean() {
+      TestBean testBean = new TestBean();
+      testBean.setName(env.getProperty("testbean.name"));
+      return testBean;
+    }
+  }
+
+  //
+  @Configuration
+  @EnableLoadTimeWeaving
+  public class AppConfig {
+  }
+
+  //
+
+public static void main(String[] args){
+  MessageSource resources =new ClassPathXmlApplicationContext("beans.xml");
+  String message = resources.getMessage("message", null, Locale.ENGLISH);
+  System.out.println(message);
+}
+  //
+
+  public class Example {
+    private MessageSource messages;
+
+    public void setMessages(MessageSource messages) {
+      this.messages = messages;
+
+    }
+
+    public void execute(){
+      String message = this.messages.getMessage("arqument.required",
+                                                new Object [] {"userDao"},"Required" Locale.ENGLISH);
+      System.out.println(message);
+    }
+  }
+
+  //
+public static void main(String[] args){
+  MessageSource resources =new ClassPathXmlApplicationContext("beans.xml");
+  String message = resources.getMessage("argument.required",
+                                       new Object[] {"userDao"},"Required", Locale.UK);
+
+  System.out.println(message);
+}
+
+  //
+  public class BlockedListEvent extends ApplicationEvent {
+
+    private final String address;
+    private final String content;
+
+    public BlockedListEvent(Object source, String address, String content) {
+      super(source);
+      this.address = address;
+      this.content = content;
+    }
+
+  }
+
+  //
+  public class EmailService implements ApplicationEventPublisherAware {
+
+    private List<String> blockedList;
+    private ApplicationEventPublisher publisher;
+
+    public void setBlockedList(List<String> blockedList) {
+      this.blockedList = blockedList;
+    }
+
+    public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
+      this.publisher = publisher;
+    }
+
+    public void sendEmail(String address, String content) {
+      if (blockedList.contains(address)) {
+        publisher.publishEvent(new BlockedListEvent(this, address, content));
+        return;
+      }
+    }
+  }
+
+  //
+  public class BlockedListNotifier implements ApplicationListener<BlockedListEvent> {
+    private String notificationAddress;
+
+    public void setNotificationAddress(String notificationAddress) {
+      this.notificationAddress = notificationAddress;
+    }
+
+    public void onApplicationEvent(BlockedListEvent event) {
+    }
+  }
+  //
+
+  public class BlockedListNotifier {
+    private String notificationAddress;
+
+    public void setNotificationAddress(String notificationAddress) {
+      this.notificationAddress = notificationAddress;
+    }
+
+    @EventListener
+    public void processBlockedListEvent(BlockedListEvent event) {
+    }
+
+  }
+
+  //
+@EventListener({ContextStartedEvent.class, ContextRefreshedEvent.class})
+  public void handleContextStart(){
+  
+  }
+
+  //
+@EventListener(condition = "#blEvent.content == 'my-event' ")
+  fun processBlockedListEvent(blEvent: BlockedListEvent){
+  }
+  //
+  Event / root object
+  Arguments array / root object 
+  Argument name / evaluation context
+
+  //
+  @EventListener
+  public ListUpdateEvent handleBlockedListEvent(ListUpdateEvent event){
+  }
+
+  //
+@EventListener
+  @Async
+  public void processBlockedListEvent(BlockedListEvent event){
+  }
+
+  //
+  @EventListener
+  Order(42)
+
+  public void processBlockedListEvent(BlockedListEvent event){
+}
+
+  //
+@EventListener
+  fun onPersonCreated(event: EntityCreateEvent<Person>)
+  {
+  
+  }
+//
+public class EntityCreatedEvent<T> extends ApplicationEvent implements
+  ResolvableTypeProvider{
+
+  public EntityCreatedEvent( T entity){
+    super(entity);
+  }
+  @Override
+  public ResolvableType getResolvableType(){
+  super(entity);
+  }
+
+  @Override
+  public ResolvableType getResolvableType(){
+    return ResolvableType.forClassWithGenerics(getClass(),
+                                              ReSolvableType.forInstance(getSource()));
+  }
+}
+//
+
+  StartupStep scanPackages = this.getApplicationStartup().start("spring.context.base-
+                                                                package.scan");
+
+scanPackages.tag("packages", ()-> Arrays.toString(basePackages));
+
+this.scanner.scan(basePackages);
+
+scanPackages.end();
+
+//
+DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+
+factory.addBeanPostProcessor(new AutowiredAnnotationBeanPostProcessor());
+factory.addBeanPostProcessor(new MyBeanPostProcessor());
+
+//
+DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
+XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);
+reader.loadBeanDefinitions(new FileSystemResource("beans.xml"));
+
+
+PropertySourcesPlaceholderConfigurer cfg =new PropertySourcesPlaceholderConfigurer();
+cfg.setLocation(new FileSystemResource("jdbc.properties"));
+
+cfg.postProcessBeanFactory(factory);
+//
+
+  public interface Resource extends InputStreamSource {
+
+    boolean exist();
+
+    boolean isReadable();
+
+    boolean isOpen();
+
+    boolean isFile();
+
+    URL getURL() throws IOException;
+
+    URI getURI() throws IOException;
+
+    File getFile() throws IOException;
+
+    ReadableByteChannel getChannel() throws IOException;
+
+    long contentLength() throws IOException;
+
+    long lastModified() throws IOException;
+
+    Resource createRelative(String relativePath) throws IOException;
+
+    String getFilename();
+
+    String getDescription();
+
+  }
+
+  //
+public interface InputStreamSourece{
+  InputStream getInputStream() throws IOException;
+  
+}
+
+// 221P
